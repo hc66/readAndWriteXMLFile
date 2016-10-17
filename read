@@ -1,0 +1,27 @@
+public JNDIDataBaseResource readPIPInfoFromXML(String location) throws IOException {
+		JNDIDataBaseResource result = new JNDIDataBaseResource();
+		Path contextXMLLocation = Paths.get(location);
+    File fXmlFile = papContextXMLLocation.toFile();
+		try{
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+       	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+       	Document doc = dBuilder.parse(fXmlFile);
+	    	doc.getDocumentElement().normalize();
+	    	NodeList nList = doc.getElementsByTagName("Resource");
+	    	for (int temp = 0; temp < nList.getLength(); temp++) {
+	    		Node nNode = nList.item(temp);
+	    		if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+	    			Element eElement = (Element) nNode;
+					  if(eElement.getAttribute("name").equals("some_shema_name_you_are_looking_for")) {
+						  result.setAuth(eElement.getAttribute("auth")).setDriverClassName(eElement.getAttribute("driverClassName"))
+						        .setName(eElement.getAttribute("name")).setPassword(eElement.getAttribute("password"))
+						        .setType(eElement.getAttribute("type")).setUrl(eElement.getAttribute("url"))
+						        .setUsername(eElement.getAttribute("username"));
+					  }
+	    		}
+	    	}
+    }catch (Exception e) {
+        e.printStackTrace();
+    }
+		return result;
+}
