@@ -1,0 +1,52 @@
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+
+public void writePIPInfoToXML(String location, JNDIDataBaseResource p) throws IOException {
+		Path pdpContextXMLLocation = Paths.get(location);
+		File fXmlFile = pdpContextXMLLocation.toFile();
+		try{
+        	DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        	DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        	Document doc = dBuilder.parse(fXmlFile);
+	    	  doc.getDocumentElement().normalize();
+	    	  Node context = doc.getElementsByTagName("Context").item(0);
+	    	  NodeList nList = doc.getElementsByTagName("Resource");
+	    	  for (int i = 0;  i< nList.getLength(); i++) {
+	    		  Node nNode = nList.item(i);
+	    		  if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+	    			  Element eElement = (Element) nNode;
+					    if(eElement.getAttribute("name").equals("some_database_schema")) {
+						    context.removeChild(eElement);
+					    }
+	    		  }
+	    	  }       	
+        	Element resource = doc.createElement("Resource");
+        	resource.setAttribute("auth", p.getAuth());
+        	resource.setAttribute("driverClassName", p.getDriverClassName());
+        	resource.setAttribute("initialSize", p.getInitialSize());
+        	resource.setAttribute("maxIdle", p.getMaxIdle());
+        	resource.setAttribute("maxTotal", p.getMaxTotal());
+        	resource.setAttribute("maxWaitMillis", p.getMaxWaitMillis());
+        	resource.setAttribute("name", p.getName());
+        	resource.setAttribute("password", p.getPassword());
+        	resource.setAttribute("type", p.getType());
+        	resource.setAttribute("url", p.getUrl());
+        	resource.setAttribute("username", p.getUsername());
+        	context.appendChild(resource);
+        	TransformerFactory transformerFactory = TransformerFactory.newInstance();
+    		  Transformer transformer = transformerFactory.newTransformer();
+    		  DOMSource source = new DOMSource(doc);
+    		  StreamResult result = new StreamResult(fXmlFile);
+    		  transformer.transform(source, result);
+     }catch (Exception e) {
+        	e.printStackTrace();
+     }
+}
